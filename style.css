@@ -1,0 +1,87 @@
+body {
+  background-color: #e1eaea;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header */
+
+header {
+  display: flex;
+  width: 100%;
+  font-size: 1.7em;
+}
+
+header h1 {
+  font-family: "Chelsea Market", cursive;
+  margin: 0 auto;
+}
+
+#game-zone {
+  display: grid;
+  grid-template-rows: repeat(2, 250px);
+  grid-template-columns: repeat(2, 250px);
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.btn {
+  transition: box-shadow 0.3s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.btn.green {
+  background-color: #009900;
+  border-radius: 0 100% 0 0;
+  margin-bottom: 4px;
+  margin-left: 4px;
+}
+
+.btn.blue {
+  background-color: #0040ff;
+  margin-top: 4px;
+  margin-right: 4px;
+  border-radius: 0 0 0 100%;
+}
+
+.btn.yellow {
+  background-color: #ffff1a;
+  border-radius: 0 0 100% 0;
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+.btn.red {
+  background-color: #ff3300;
+  border-radius: 100% 0 0 0;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+/* light */
+.btn.yellow.light {
+  background-color: #ffff80;
+  box-shadow: 2px 2px 8px #ffff1a;
+}
+
+.btn.green.light {
+  background-color: #4dff4d;
+  /*box-shadow: 2px -2px -8px #ffff1a;*/
+}
+
+.btn.red.light {
+  background-color: #ff8566;
+  /*box-shadow: -2px -2px 8px rgba(255, 51, 0, 1);*/
+}
+
+.btn.blue.light {
+  background-color: #668cff;
+  /*box-shadow: 2px 2px 8px #ffff1a;*/
+}
