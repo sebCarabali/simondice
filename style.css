@@ -1,5 +1,5 @@
 body {
-  background-color: #e1eaea;
+  background-color: #00264d;
   margin: 0;
   padding: 0;
 }
@@ -11,6 +11,7 @@ header {
   width: 100%;
   font-size: 1.7em;
   margin-top: 20px;
+  color: #fff;
 }
 
 header h1 {
@@ -22,6 +23,23 @@ header h1 {
   display: grid;
   grid-template-rows: repeat(2, 200px);
   grid-template-columns: repeat(2, 200px);
+}
+
+.playbutton {
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.7);
+  font-weight: bold;
+  font-family: "Chelsea Market", cursive;
+  z-index: 1;
+}
+
+.playbutton:hover {
+  cursor: pointer;
+}
+
+.hide {
+  /*display: none;*/
+  visibility: hidden;
 }
 
 .center {
