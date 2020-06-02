@@ -10,6 +10,7 @@ header {
   display: flex;
   width: 100%;
   font-size: 1.7em;
+  margin-top: 20px;
 }
 
 header h1 {
@@ -19,8 +20,8 @@ header h1 {
 
 #game-zone {
   display: grid;
-  grid-template-rows: repeat(2, 250px);
-  grid-template-columns: repeat(2, 250px);
+  grid-template-rows: repeat(2, 200px);
+  grid-template-columns: repeat(2, 200px);
 }
 
 .center {
