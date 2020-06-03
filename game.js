@@ -1,49 +1,65 @@
-const MAX_LEVELS = 3;
-
 function $(selector, container) {
   return (container || document).querySelector(selector);
 }
 
 (function () {
-  var _ = (self.Simon = function () {
-    this.initGame();
-  });
-
-  _.prototype = {
-    initGame: function () {
-      this.actualLevel = 1;
-      this.sequence = [];
-      this.genLevels();
-    },
-    genLevels: function () {
-      for (let i = 0; i < MAX_LEVELS; i++) {
-        this.sequence.push(Math.floor(Math.random() * 4));
-      }
-    },
-    isWinning: function () {
-      return this.actualLevel === MAX_LEVELS + 1;
-    },
-    nextLevel: function () {
-      this.actualLevel += 1;
-    },
-    getNextSequence: function () {
-      return this.sequence.slice(0, this.actualLevel);
-    },
-  };
-})();
-
-(function () {
-  var _ = (self.SimonView = function (controller) {
-    this.controller = controller;
+  var _ = (self.Game = function (maxLevel) {
+    this.maxLevel = maxLevel;
     this.init();
   });
 
   _.prototype = {
     init: function () {
-      this.getColors();
-      this.addClickEvents();
+      this.currentLevel = 1;
+      this.sequence = [];
+      this.currentMove = 0;
+      this.genSequence();
     },
-    getColors: function () {
+
+    genSequence: function () {
+      for (let i = 0; i < this.maxLevel; i++) {
+        this.sequence.push(Math.floor(Math.random() * 4));
+      }
+    },
+
+    makeMove: function (move) {
+      return move === this.sequence[this.currentMove++];
+    },
+
+    goToNextLevel: function () {
+      this.currentLevel++;
+      this.currentMove = 0;
+    },
+
+    isSuccesLevel: function () {
+      return this.currentMove === this.currentLevel;
+    },
+
+    getCurrentSequence: function () {
+      return this.sequence.slice(0, this.currentLevel);
+    },
+
+    isWinning: function() {
+      return this.currentLevel === this.maxLevel+1;
+    }
+  };
+})();
+
+(function () {
+  var _ = (self.Octupus = function (model, view) {
+    this.model = model;
+    this.view = view;
+    this.handleClick = this.handleClick.bind(this);
+    this.init();
+  });
+
+  _.prototype = {
+    init: function () {
+      this.loadColors();
+      this.addEvents();
+    },
+
+    loadColors: function () {
       this.colors = [
         $(".btn.red"),
         $(".btn.green"),
@@ -51,121 +67,115 @@ function $(selector, container) {
         $(".btn.blue"),
       ];
     },
-    clickCallback: async function (evt) {
-      if (this.controller.isPlaying) {
-        let colorIdx = this.colors.findIndex((color) => evt.target === color);
-        this.printSequence([colorIdx]);
-        await this.controller
-          .makeMove(colorIdx)
-          .then((res) => {
-            if (res === true) {
-              alert("Has ganado el juego");
-              this.controller.resetGame();
-              this.showInitButton();
-            } else {
-              console.log("Printing seq");
-              this.printSequence(res);
-            }
-          })
-          .catch((err) => {
-            alert("Movimiento incorrecto!!");
-            this.controller.resetGame();
-            this.showInitButton();
-          });
-      }
+
+    newGame: function () {
+      this.canClick = false;
+      this.model.init();
+      this.makeAPause(500).then((res) => {
+        this.giveSequence();
+      });
     },
-    addClickEvents: function () {
+
+    makeAPause: function (ms) {
+      return new Promise((res, rej) => {
+        setTimeout(() => {
+          res();
+        }, ms);
+      });
+    },
+
+    giveSequence: async function () {
+      let idxSeq = this.model.getCurrentSequence();
+      let colorSequence = idxSeq.map((idx) => this.colors[idx]);
+      await this.view.animateSequence(colorSequence);
+      this.makeAPause(500).then((res) => {
+        this.canClick = true;
+      });
+    },
+
+    addEvents: function () {
       this.colors.forEach((color) => {
-        color.addEventListener("click", this.clickCallback.bind(this));
+        color.addEventListener("click", this.handleClick);
       });
 
       $(".playbutton").addEventListener("click", (evt) => {
+        this.newGame();
         evt.target.classList.add("hide");
-        this.controller.initGame();
       });
     },
-    showInitButton: function () {
-      $(".playbutton").classList.remove("hide");
-    },
-    printSequence: async function (sequence) {
-      if (this.controller.isPlaying) {
-        for (let i = 0; i < sequence.length; i++) {
-          await this.buttonOn(this.colors[sequence[i]]).then((color) => {
-            return this.buttonOff(color);
-          });
-        }
+
+    handleClick: function (evt) {
+      // TODO: refactorizar
+      if (this.canClick) {
+        let color = evt.target;
+        let colorIdx = this.colors.findIndex((c) => c === color);
+        console.log(colorIdx);
+        this.canClick = false;
+        this.view.animateColor(color).then((res) => {
+          if (this.model.makeMove(colorIdx)) {
+            if (this.model.isSuccesLevel()) {
+              this.canClick = false;
+              this.model.goToNextLevel();
+              if(this.model.isWinning()){
+                alert("Felicitaciones, has ganado el juego!!");
+                $(".playbutton").classList.remove("hide");
+                return;
+              }
+              this.makeAPause(500).then(() => {
+                this.giveSequence();
+              });
+            }
+            this.canClick = true;
+          } else {
+            alert("Error, vuelve a empezar");
+            this.canClick = false;
+            $(".playbutton").classList.remove("hide");
+          }
+        });
       }
-    },
-    buttonOn: function (color) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          color.classList.add("light");
-          resolve(color);
-        }, 300);
-      });
-    },
-    buttonOff: function (color) {
-      return new Promise((res, rej) => {
-        setTimeout(() => {
-          color.classList.remove("light");
-          res(color);
-        }, 500);
-      });
-    },
-    showWinMessage: function () {
-      alert("Has ganado el guego!!");
-      this.showInitButton();
     },
   };
 })();
 
 (function () {
-  var _ = (self.SimonController = function () {
-    this.game = new Simon();
-    this.view = new SimonView(this);
-    this.currentMove = 0;
-    this.isPlaying = false;
-  });
+  var _ = (self.View = function () {});
 
   _.prototype = {
-    initGame: function () {
-      this.isPlaying = true;
-      this.currentMove = 0;
-      this.view.printSequence(this.game.getNextSequence());
-    },
-    resetGame: function () {
-      this.isPlaying = false;
-      this.currentMove = 0;
-      this.game.initGame();
-    },
-    passToNextLevel: function () {
-      this.currentMove = 0;
-      this.game.nextLevel();
-      this.view.printSequence(this.game.getNextSequence());
-    },
-    makeMove: function (colorVal) {
-      return new Promise((resolve, reject) => {
-        let isTheMove = this.game.sequence[this.currentMove++] === colorVal;
-        if (isTheMove && this.currentMove === this.game.actualLevel) {
-          console.log("Passing to the next level");
+    animateColor: function (color) {
+      // TODO: refactorizar
+      return new Promise((res, rej) => {
+        new Promise((res, rej) => {
           setTimeout(() => {
-            this.passToNextLevel();
-            if (this.game.isWinning()) {
-              this.isPlaying = false;
-              this.view.showWinMessage();
-              resolve(true);
-            }
-            resolve(this.game.getNextSequence());
-          }, 1500);
-        } else if (!isTheMove) {
-          this.isPlaying = false;
-          reject(false);
-        }
-
-        resolve(false);
+            this.colorOn(color);
+            res();
+          }, 200);
+        }).then(() => {
+          setTimeout(() => {
+            this.colorOff(color);
+            res(true);
+          }, 600);
+        });
       });
+    },
+
+    colorOn: function (color) {
+      color.classList.add("light");
+    },
+
+    colorOff: function (color) {
+      color.classList.remove("light");
+    },
+
+    animateSequence: function (colorSequence) {
+      colorSequence.reduce((previusPromise, nextColor) => {
+        return previusPromise.then(() => {
+          return this.animateColor(nextColor);
+        });
+      }, Promise.resolve());
     },
   };
 })();
 
-let controller = new SimonController();
+var model = new Game(10);
+var view = new View();
+var octupus = new Octupus(model, view);

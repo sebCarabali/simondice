@@ -52,7 +52,7 @@ header h1 {
 }
 
 .btn {
-  transition: box-shadow 0.3s ease-in-out;
+  /*transition: box-shadow 0.3s ease-in-out;*/
   transition: background-color 0.3s ease-in-out;
 }
 
