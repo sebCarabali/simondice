@@ -39,9 +39,9 @@ function $(selector, container) {
       return this.sequence.slice(0, this.currentLevel);
     },
 
-    isWinning: function() {
-      return this.currentLevel === this.maxLevel+1;
-    }
+    isWinning: function () {
+      return this.currentLevel === this.maxLevel + 1;
+    },
   };
 })();
 
@@ -116,7 +116,7 @@ function $(selector, container) {
             if (this.model.isSuccesLevel()) {
               this.canClick = false;
               this.model.goToNextLevel();
-              if(this.model.isWinning()){
+              if (this.model.isWinning()) {
                 alert("Felicitaciones, has ganado el juego!!");
                 $(".playbutton").classList.remove("hide");
                 return;
@@ -142,28 +142,30 @@ function $(selector, container) {
 
   _.prototype = {
     animateColor: function (color) {
-      // TODO: refactorizar
+      
       return new Promise((res, rej) => {
-        new Promise((res, rej) => {
-          setTimeout(() => {
-            this.colorOn(color);
-            res();
-          }, 200);
-        }).then(() => {
-          setTimeout(() => {
-            this.colorOff(color);
-            res(true);
-          }, 600);
+        this.colorOn(color, 300).then(() => {
+          this.colorOff(color, 500).then(() => res());
         });
       });
     },
 
-    colorOn: function (color) {
-      color.classList.add("light");
+    colorOn: function (color, pauseTime) {
+      return new Promise((res, rej) => {
+        setTimeout(() => {
+          color.classList.add("light");
+          res();
+        }, pauseTime);
+      });
     },
 
-    colorOff: function (color) {
-      color.classList.remove("light");
+    colorOff: function (color, pauseTime) {
+      return new Promise((res) => {
+        setTimeout(() => {
+          color.classList.remove("light");
+          res();
+        }, pauseTime);
+      });
     },
 
     animateSequence: function (colorSequence) {
